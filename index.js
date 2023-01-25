@@ -5,7 +5,7 @@ const axios = require("axios");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const sqlite3 = require("sqlite3").verbose();
-var db = new sqlite3.Database("links.db");
+var db = new sqlite3.Database(path.resolve(__dirname, "links.db"));
 db.run(
   "CREATE TABLE IF NOT EXISTS links (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT NOT NULL UNIQUE)"
 );
