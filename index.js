@@ -6,9 +6,15 @@ const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const sqlite3 = require("sqlite3").verbose();
 var db = new sqlite3.Database(path.resolve(__dirname, "links.db"));
-db.run(
-  "CREATE TABLE IF NOT EXISTS links (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT NOT NULL UNIQUE)"
-);
+
+try {
+  db.run(
+    "CREATE TABLE IF NOT EXISTS links (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT NOT NULL UNIQUE)"
+  );
+  console.log("Table creation query successful");
+} catch (error) {
+  cconsole.log("ERROR during Running Table creation query", error);
+}
 
 //Functions
 
@@ -32,12 +38,12 @@ const sendTelegramMessage = async (message, html, links) => {
 const fetchUrl = async () => {
   const URL = "https://api.npoint.io/e7cfcfb7fd88fa0d7d0e";
   let res = await axios.get(URL);
-  console.log(res.data.url);
   return res.data.url;
 };
 
 const insertData = (link) => {
   try {
+    console.log(`INSERTING to db`);
     let query = `INSERT OR IGNORE INTO links (url) values('${link}')`;
     db.run(query);
     return true;
@@ -49,18 +55,20 @@ const insertData = (link) => {
 
 const chekUrlExist = async (link) => {
   try {
+    console.log(`Fetching Data`)
     let sql = `SELECT url FROM links where url ='${link}'`;
     let data = new Promise((resolve, reject) => {
       db.all(sql, [], async (err, rows) => {
         if (err) {
           reject(false);
         }
+        console.log("Data Exist");
         resolve(rows.length);
       });
     });
     return await data;
   } catch (error) {
-    console.log("error fetching data");
+    console.log("error fetching data",error);
   }
 };
 
@@ -73,7 +81,7 @@ const checkAndSend = async (url) => {
     message += " ";
     message += url;
     await sendTelegramMessage(message, true, true);
-    await insertData(url);
+    insertData(url);
     return true;
   } catch (error) {
     console.log("unable to send message");
@@ -82,7 +90,6 @@ const checkAndSend = async (url) => {
 };
 
 app.all("/", (req, res) => {
-  console.log("Just got a request!");
   res.send("Yo!");
 });
 
