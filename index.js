@@ -46,6 +46,7 @@ const insertData = (link) => {
     console.log(`INSERTING to db`);
     let query = `INSERT OR IGNORE INTO links (url) values('${link}')`;
     db.run(query);
+    console.log("Data Insertion Successful")
     return true;
   } catch (error) {
     console.log(error);
@@ -60,9 +61,11 @@ const chekUrlExist = async (link) => {
     let data = new Promise((resolve, reject) => {
       db.all(sql, [], async (err, rows) => {
         if (err) {
+          console.log("Error",err)
           reject(false);
         }
-        console.log("Data Exist");
+        console.log("Data Exist", rows);
+        console.log("Data Exist", rows?.length);
         resolve(rows.length);
       });
     });
@@ -74,8 +77,9 @@ const chekUrlExist = async (link) => {
 
 const checkAndSend = async (url) => {
   try {
+    console.log("Url Check", await chekUrlExist(url));
     if (await chekUrlExist(url)) {
-      return;
+      return true;
     }
     let message = "----------<b>TMV Updates</b>----------";
     message += " ";
