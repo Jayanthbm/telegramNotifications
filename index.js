@@ -10,7 +10,6 @@ try {
   db.run(
     "CREATE TABLE IF NOT EXISTS links (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT NOT NULL UNIQUE)"
   );
-  console.log("Table creation query successful");
 } catch (error) {
   console.log("ERROR during Running Table creation query", error);
 }
@@ -42,10 +41,8 @@ const fetchUrl = async () => {
 
 const insertData = (link) => {
   try {
-    console.log(`INSERTING to db`);
     let query = `INSERT OR IGNORE INTO links (url) values('${link}')`;
     db.run(query);
-    console.log("Data Insertion Successful")
     return true;
   } catch (error) {
     console.log(error);
@@ -55,21 +52,20 @@ const insertData = (link) => {
 
 const chekUrlExist = async (link) => {
   try {
-    console.log(`Fetching Data From DB`)
+    console.log(`Fetching Data From DB`);
     let sql = `SELECT url FROM links where url ='${link}'`;
     let data = new Promise((resolve, reject) => {
       db.all(sql, [], async (err, rows) => {
         if (err) {
-          console.log("Error",err)
+          console.log("Error", err);
           reject(false);
         }
-        console.log("Data Exist", rows);
         resolve(rows.length);
       });
     });
     return await data;
   } catch (error) {
-    console.log("error fetching data",error);
+    console.log("error fetching data", error);
   }
 };
 
@@ -100,12 +96,18 @@ app.get("/tmv", async (req, res) => {
     let result = await axios.get(url);
     let data = result.data;
     const { document } = new JSDOM(data).window;
-    let queryNumbers = [1, 3, 5, 7, 9];
+    let list = document.querySelector(
+      "#ipsLayout_sidebar > div.cWidgetContainer > ul > li:nth-child(3) > div"
+    ).childNodes[1].childNodes;
+    let length = list.length - 1;
+    let queryNumbers = [];
+    for (let i = 1; i < length; i++) {
+      if (i % 2 !== 0) queryNumbers.push(i);
+    }
+
     for (let i = 0; i < queryNumbers.length; i++) {
       let index = queryNumbers[i];
-      let url =
-        document.querySelector(".ipsDataList").childNodes[index].childNodes[3]
-          .childNodes[3].childNodes[1].href;
+      let url = list[index].childNodes[3].childNodes[3].childNodes[1].href;
       await checkAndSend(url);
     }
     res.send("OK");
