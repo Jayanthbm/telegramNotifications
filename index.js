@@ -1,11 +1,10 @@
 const express = require("express");
 const app = express();
-const path = require("path");
 const axios = require("axios");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const sqlite3 = require("sqlite3").verbose();
-var db = new sqlite3.Database(path.resolve(__dirname, "links.db"));
+const db = new sqlite3.Database(":memory:");
 
 try {
   db.run(
@@ -13,7 +12,7 @@ try {
   );
   console.log("Table creation query successful");
 } catch (error) {
-  cconsole.log("ERROR during Running Table creation query", error);
+  console.log("ERROR during Running Table creation query", error);
 }
 
 //Functions
@@ -56,7 +55,7 @@ const insertData = (link) => {
 
 const chekUrlExist = async (link) => {
   try {
-    console.log(`Fetching Data`)
+    console.log(`Fetching Data From DB`)
     let sql = `SELECT url FROM links where url ='${link}'`;
     let data = new Promise((resolve, reject) => {
       db.all(sql, [], async (err, rows) => {
@@ -65,7 +64,6 @@ const chekUrlExist = async (link) => {
           reject(false);
         }
         console.log("Data Exist", rows);
-        console.log("Data Exist", rows?.length);
         resolve(rows.length);
       });
     });
@@ -77,7 +75,6 @@ const chekUrlExist = async (link) => {
 
 const checkAndSend = async (url) => {
   try {
-    console.log("Url Check", await chekUrlExist(url));
     if (await chekUrlExist(url)) {
       return true;
     }
